@@ -1,5 +1,5 @@
 {
-  "_comment": "Representative recorded LLM outputs (extraction + entity resolution + match proposal) per sample, for the OFFLINE eval-smoke. Line items mirror the takehome generator verbatim; entity and match proposals encode the intended reference/catalog mapping. The eval-smoke threads these through the REAL validation→catalog→decide chain (no network) and asserts the golden decision.",
+  "_comment": "Representative recorded LLM outputs (extraction + entity resolution + match proposal + decision proposal) per sample, for the OFFLINE eval-smoke. Line items mirror the takehome generator verbatim; entity and match proposals encode the intended reference/catalog mapping. The eval-smoke threads these through the REAL validation→catalog→decision reconciliation chain (no network) and asserts the golden decision.",
   "simple-invoice": {
     "extracted": {
       "metadata": { "invoice_number": "INV-2024-001", "invoice_date": "2024-03-15", "sponsor_name": "Contoso Therapeutics", "study_name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "site_name": "Willow Creek Clinical Research Center", "pi_name": "Dr. Alex Morgan", "total_amount": 2230 },
@@ -24,6 +24,13 @@
         { "line_index": 3, "item_code": "LAB-CBC", "confidence": 0.95, "reason": "Complete Blood Count = CBC" },
         { "line_index": 4, "item_code": "PROC-INFUS", "confidence": 0.9, "reason": "IV Infusion Administration ≈ Infusion" }
       ]
+    },
+    "decisionProposal": {
+      "decision": "submit",
+      "rationale": "AI reviewed the resolved context and all matched catalog items; submit to ClinRun.",
+      "confidence": 0.96,
+      "exception_codes": [],
+      "warnings": []
     }
   },
   "medium-invoice": {
@@ -62,6 +69,13 @@
         { "line_index": 9, "item_code": "PROC-PK", "confidence": 0.9, "reason": "PK Blood Draw ≈ PK Sample Collection" },
         { "line_index": 10, "item_code": "ADMIN-IRB", "confidence": 0.9, "reason": "IRB/Ethics Fees ≈ IRB Submission and Maintenance" }
       ]
+    },
+    "decisionProposal": {
+      "decision": "submit",
+      "rationale": "AI would otherwise submit based on context and semantic matches.",
+      "confidence": 0.72,
+      "exception_codes": [],
+      "warnings": []
     }
   },
   "large-invoice": {
@@ -132,6 +146,13 @@
         { "line_index": 25, "item_code": null, "confidence": 0.15, "reason": "Patient Stipend — not in catalog" },
         { "line_index": 26, "item_code": null, "confidence": 0.15, "reason": "Translator Services — not in catalog" }
       ]
+    },
+    "decisionProposal": {
+      "decision": "hold",
+      "rationale": "AI recommends holding because several billed items are outside the scoped catalog and some matched items have price deltas.",
+      "confidence": 0.97,
+      "exception_codes": ["unmatched_line_items", "price_mismatch"],
+      "warnings": []
     }
   },
   "mismatched-metadata-invoice": {
@@ -152,6 +173,13 @@
       "study": { "id": 2, "confidence": 0.91, "reason": "VERITAS Phase 2 Study matches the study name, while protocol validation is handled separately." },
       "site": { "id": 6, "confidence": 0.45, "reason": "Prairie Clinical Research resembles Prairie Field Research Group but is not confident enough to auto-resolve." }
     },
-    "matchProposal": { "matches": [] }
+    "matchProposal": { "matches": [] },
+    "decisionProposal": {
+      "decision": "hold",
+      "rationale": "AI recommends holding because sponsor/site context did not resolve confidently and the protocol conflicts with the resolved study.",
+      "confidence": 0.98,
+      "exception_codes": ["metadata_unresolved", "protocol_mismatch"],
+      "warnings": []
+    }
   }
 }

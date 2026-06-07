@@ -35,7 +35,7 @@ Audit evidence: code review, `npm run verify`, `npm run build:web`, live `npm ru
 - [x] Extract invoice line items using an LLM.
 - [x] Use LLM integration for metadata and entity resolution. Entity resolution now asks the LLM to choose sponsor/study/site IDs from MCP-fetched candidates, then deterministically validates confidence, ID existence, sponsor-study scope, and protocol match before decisioning.
 - [x] Use LLM integration for line-item matching support.
-- [ ] Use LLM integration for submit-versus-hold decisioning. Not implemented as written: submit-versus-hold policy is deterministic over AI-derived extraction and matching signals.
+- [x] Use LLM integration for submit-versus-hold decisioning. Decisioning now asks the LLM for a typed submit/hold proposal over validated extraction, resolution, matching, and deterministic exception signals, then reconciles that proposal so deterministic blockers still force a hold.
 - [x] Communicate why the AI submitted or held each invoice.
 
 ## Reference API and Context Resolution

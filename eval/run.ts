@@ -2,16 +2,17 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { ingest } from "../server/src/ingest.js";
-import { extractInvoice, proposeMatches, resolveEntities, llmConfigured } from "../server/src/llm.js";
+import { extractInvoice, proposeDecision, proposeMatches, resolveEntities, llmConfigured } from "../server/src/llm.js";
 import { fetchReferenceSnapshot, fetchCatalog } from "../server/src/mcp/client.js";
 import { resolveContextFromProposal } from "../server/src/resolve.js";
 import { buildMatches } from "../server/src/match.js";
-import { decide } from "../server/src/decide.js";
+import { buildDecisionDraft, decide } from "../server/src/decide.js";
 
 // On-demand LIVE eval: drive the real pipeline (real LLM extraction + entity
-// resolution + matching, real reference API via MCP) over the sample .eml fixtures and grade against
-// fixtures/golden.json. This is the joint-system oracle — never wired to the
-// Stop hook (it's networked + costs tokens). Run with: npm run eval.
+// resolution + matching + decisioning, real reference API via MCP) over the
+// sample .eml fixtures and grade against fixtures/golden.json. This is the
+// joint-system oracle — never wired to the Stop hook (it's networked + costs
+// tokens). Run with: npm run eval.
 const root = fileURLToPath(new URL("..", import.meta.url));
 const golden = JSON.parse(readFileSync(join(root, "fixtures/golden.json"), "utf8"));
 const emlDir = join(root, "fixtures/emls");
@@ -40,7 +41,9 @@ for (const file of readdirSync(emlDir).filter((f) => f.endsWith(".eml")).sort())
       const catalog = await fetchCatalog(resolved.sponsor.match.id, resolved.study.match.id);
       matches = buildMatches(extracted.line_items, await proposeMatches(extracted.line_items, catalog), catalog);
     }
-    const decision = decide(extracted, resolved, matches);
+    const decisionDraft = buildDecisionDraft(extracted, resolved, matches);
+    const decisionProposal = await proposeDecision(extracted, resolved, matches, decisionDraft);
+    const decision = decide(extracted, resolved, matches, decisionProposal);
     const codes: string[] = decision.exceptions.map((e) => e.code);
 
     const checks = [

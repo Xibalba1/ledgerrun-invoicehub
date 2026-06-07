@@ -140,7 +140,7 @@ export const MatchProposal = z.object({
 });
 export type MatchProposal = z.infer<typeof MatchProposal>;
 
-// ── Stage 4: decision (deterministic policy over the AI-derived signals) ──────
+// ── Stage 4: decision (LLM proposal + deterministic safety reconciliation) ───
 
 export const ExceptionCode = z.enum([
   "metadata_unresolved",
@@ -149,6 +149,7 @@ export const ExceptionCode = z.enum([
   "price_mismatch",
   "low_confidence_match",
   "total_mismatch",
+  "ai_review_recommended",
 ]);
 export const Exception = z.object({
   code: ExceptionCode,
@@ -156,6 +157,13 @@ export const Exception = z.object({
   message: z.string(),
 });
 export const Decision = z.enum(["submit", "hold"]);
+export const DecisionProposal = z.object({
+  decision: Decision,
+  rationale: z.string().min(1),
+  confidence: z.number().min(0).max(1),
+  exception_codes: z.array(ExceptionCode).default([]),
+  warnings: z.array(z.string()).default([]),
+});
 export const DecisionResult = z.object({
   decision: Decision,
   rationale: z.string(),
@@ -164,6 +172,7 @@ export const DecisionResult = z.object({
 export type ExceptionCode = z.infer<typeof ExceptionCode>;
 export type Exception = z.infer<typeof Exception>;
 export type Decision = z.infer<typeof Decision>;
+export type DecisionProposal = z.infer<typeof DecisionProposal>;
 export type DecisionResult = z.infer<typeof DecisionResult>;
 
 // ── Persisted invoice record / pipeline state (observable) ───────────────────
