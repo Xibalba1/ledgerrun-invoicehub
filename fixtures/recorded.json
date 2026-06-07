@@ -1,0 +1,157 @@
+{
+  "_comment": "Representative recorded LLM outputs (extraction + entity resolution + match proposal) per sample, for the OFFLINE eval-smoke. Line items mirror the takehome generator verbatim; entity and match proposals encode the intended reference/catalog mapping. The eval-smoke threads these through the REAL validation→catalog→decide chain (no network) and asserts the golden decision.",
+  "simple-invoice": {
+    "extracted": {
+      "metadata": { "invoice_number": "INV-2024-001", "invoice_date": "2024-03-15", "sponsor_name": "Contoso Therapeutics", "study_name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "site_name": "Willow Creek Clinical Research Center", "pi_name": "Dr. Alex Morgan", "total_amount": 2230 },
+      "line_items": [
+        { "description": "Site Management Fee", "quantity": 1, "unit_price": 400, "amount": 400 },
+        { "description": "Screening Visit", "quantity": 2, "unit_price": 480, "amount": 960 },
+        { "description": "Baseline Visit", "quantity": 1, "unit_price": 550, "amount": 550 },
+        { "description": "Complete Blood Count", "quantity": 1, "unit_price": 95, "amount": 95 },
+        { "description": "IV Infusion Administration", "quantity": 1, "unit_price": 225, "amount": 225 }
+      ]
+    },
+    "entityResolutionProposal": {
+      "sponsor": { "id": 2, "confidence": 0.98, "reason": "Extracted sponsor name exactly matches Contoso Therapeutics." },
+      "study": { "id": 3, "confidence": 0.98, "reason": "CATALYST Trial and protocol CON-CAT-2024-101 match the study." },
+      "site": { "id": 1, "confidence": 0.97, "reason": "Site name matches Willow Creek Clinical Research Center." }
+    },
+    "matchProposal": {
+      "matches": [
+        { "line_index": 0, "item_code": "ADMIN-SITE", "confidence": 0.95, "reason": "Site Management Fee ≈ Site Fee" },
+        { "line_index": 1, "item_code": "VISIT-SCR", "confidence": 0.97, "reason": "Screening Visit = Screening" },
+        { "line_index": 2, "item_code": "VISIT-BL", "confidence": 0.96, "reason": "Baseline Visit = Baseline" },
+        { "line_index": 3, "item_code": "LAB-CBC", "confidence": 0.95, "reason": "Complete Blood Count = CBC" },
+        { "line_index": 4, "item_code": "PROC-INFUS", "confidence": 0.9, "reason": "IV Infusion Administration ≈ Infusion" }
+      ]
+    }
+  },
+  "medium-invoice": {
+    "extracted": {
+      "metadata": { "invoice_number": "INV-2024-042", "invoice_date": "2024-06-20", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "pi_name": "Dr. Jordan Blake", "total_amount": 7145 },
+      "line_items": [
+        { "description": "Site Administration Fee", "quantity": 1, "unit_price": 350, "amount": 350 },
+        { "description": "Screening Visit", "quantity": 3, "unit_price": 450, "amount": 1350 },
+        { "description": "Baseline Assessment", "quantity": 2, "unit_price": 525, "amount": 1050 },
+        { "description": "Week 4 Follow-up", "quantity": 2, "unit_price": 475, "amount": 950 },
+        { "description": "Week 8 Follow-up", "quantity": 2, "unit_price": 475, "amount": 950 },
+        { "description": "12-Lead ECG", "quantity": 5, "unit_price": 85, "amount": 425 },
+        { "description": "CBC", "quantity": 4, "unit_price": 95, "amount": 380 },
+        { "description": "CMP", "quantity": 4, "unit_price": 110, "amount": 440 },
+        { "description": "Drug Infusion", "quantity": 2, "unit_price": 200, "amount": 400 },
+        { "description": "PK Blood Draw", "quantity": 4, "unit_price": 75, "amount": 300 },
+        { "description": "IRB/Ethics Fees", "quantity": 1, "unit_price": 550, "amount": 550 }
+      ]
+    },
+    "entityResolutionProposal": {
+      "sponsor": { "id": 1, "confidence": 0.98, "reason": "Northwind Pharma matches the Northwind sponsor." },
+      "study": { "id": 1, "confidence": 0.99, "reason": "LUMIN-2024 and protocol NWD-LUM-2024-001 match the study." },
+      "site": { "id": 2, "confidence": 0.97, "reason": "Site name and PI match Harborview Medical Institute." }
+    },
+    "matchProposal": {
+      "matches": [
+        { "line_index": 0, "item_code": "ADMIN-SITE", "confidence": 0.95, "reason": "exact" },
+        { "line_index": 1, "item_code": "VISIT-SCR", "confidence": 0.96, "reason": "Screening Visit" },
+        { "line_index": 2, "item_code": "VISIT-BL", "confidence": 0.9, "reason": "Baseline Assessment ≈ Baseline" },
+        { "line_index": 3, "item_code": "VISIT-WK4", "confidence": 0.92, "reason": "Week 4 Follow-up ≈ Week 4" },
+        { "line_index": 4, "item_code": "VISIT-WK8", "confidence": 0.92, "reason": "Week 8 Follow-up ≈ Week 8" },
+        { "line_index": 5, "item_code": "PROC-ECG", "confidence": 0.95, "reason": "12-Lead ECG" },
+        { "line_index": 6, "item_code": "LAB-CBC", "confidence": 0.95, "reason": "CBC" },
+        { "line_index": 7, "item_code": "LAB-CMP", "confidence": 0.93, "reason": "CMP = Comprehensive Metabolic Panel" },
+        { "line_index": 8, "item_code": "PROC-INFUS", "confidence": 0.88, "reason": "Drug Infusion ≈ Study Drug Infusion" },
+        { "line_index": 9, "item_code": "PROC-PK", "confidence": 0.9, "reason": "PK Blood Draw ≈ PK Sample Collection" },
+        { "line_index": 10, "item_code": "ADMIN-IRB", "confidence": 0.9, "reason": "IRB/Ethics Fees ≈ IRB Submission and Maintenance" }
+      ]
+    }
+  },
+  "large-invoice": {
+    "extracted": {
+      "metadata": { "invoice_number": "INV-2024-108", "invoice_date": "2024-09-12", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Highland Ridge Hospital - Research Unit", "pi_name": "Dr. Taylor Reed", "total_amount": 29191 },
+      "line_items": [
+        { "description": "Site Admin", "quantity": 1, "unit_price": 350, "amount": 350 },
+        { "description": "Screening Visit", "quantity": 5, "unit_price": 450, "amount": 2250 },
+        { "description": "Baseline Visit", "quantity": 4, "unit_price": 525, "amount": 2100 },
+        { "description": "Wk 4 Visit", "quantity": 4, "unit_price": 475, "amount": 1900 },
+        { "description": "Wk 8 Visit", "quantity": 4, "unit_price": 475, "amount": 1900 },
+        { "description": "Week 12 Visit", "quantity": 4, "unit_price": 500, "amount": 2000 },
+        { "description": "Week 16 Visit", "quantity": 4, "unit_price": 500, "amount": 2000 },
+        { "description": "Wk 24 Visit", "quantity": 3, "unit_price": 525, "amount": 1575 },
+        { "description": "End of Study Visit", "quantity": 2, "unit_price": 550, "amount": 1100 },
+        { "description": "ECG", "quantity": 12, "unit_price": 85, "amount": 1020 },
+        { "description": "Vitals", "quantity": 20, "unit_price": 45, "amount": 900 },
+        { "description": "Physical Exam", "quantity": 10, "unit_price": 120, "amount": 1200 },
+        { "description": "IV Drug Administration", "quantity": 8, "unit_price": 200, "amount": 1600 },
+        { "description": "Pharmacokinetic Sampling", "quantity": 16, "unit_price": 75, "amount": 1200 },
+        { "description": "CBC w/ Differential", "quantity": 10, "unit_price": 95, "amount": 950 },
+        { "description": "Comprehensive Metabolic Panel", "quantity": 10, "unit_price": 110, "amount": 1100 },
+        { "description": "UA", "quantity": 8, "unit_price": 55, "amount": 440 },
+        { "description": "Hepatic Function Panel", "quantity": 8, "unit_price": 88, "amount": 704 },
+        { "description": "Lipid Panel", "quantity": 6, "unit_price": 78, "amount": 468 },
+        { "description": "CT Scan - Chest/Abdomen", "quantity": 2, "unit_price": 475, "amount": 950 },
+        { "description": "IRB Annual Maintenance", "quantity": 1, "unit_price": 500, "amount": 500 },
+        { "description": "Drug Shipping (cold chain)", "quantity": 3, "unit_price": 125, "amount": 375 },
+        { "description": "Lab Supplies", "quantity": 10, "unit_price": 42, "amount": 420 },
+        { "description": "Sample Transport", "quantity": 8, "unit_price": 58, "amount": 464 },
+        { "description": "Parking Reimbursement", "quantity": 15, "unit_price": 25, "amount": 375 },
+        { "description": "Patient Stipend", "quantity": 12, "unit_price": 75, "amount": 900 },
+        { "description": "Translator Services", "quantity": 3, "unit_price": 150, "amount": 450 }
+      ]
+    },
+    "entityResolutionProposal": {
+      "sponsor": { "id": 1, "confidence": 0.98, "reason": "Northwind Pharma matches the Northwind sponsor." },
+      "study": { "id": 1, "confidence": 0.99, "reason": "LUMIN-2024 and protocol NWD-LUM-2024-001 match the study." },
+      "site": { "id": 3, "confidence": 0.96, "reason": "Site name matches Highland Ridge Hospital - Research Unit." }
+    },
+    "matchProposal": {
+      "matches": [
+        { "line_index": 0, "item_code": "ADMIN-SITE", "confidence": 0.9, "reason": "Site Admin" },
+        { "line_index": 1, "item_code": "VISIT-SCR", "confidence": 0.95, "reason": "Screening Visit" },
+        { "line_index": 2, "item_code": "VISIT-BL", "confidence": 0.95, "reason": "Baseline Visit" },
+        { "line_index": 3, "item_code": "VISIT-WK4", "confidence": 0.9, "reason": "Wk 4 Visit" },
+        { "line_index": 4, "item_code": "VISIT-WK8", "confidence": 0.9, "reason": "Wk 8 Visit" },
+        { "line_index": 5, "item_code": "VISIT-WK12", "confidence": 0.95, "reason": "Week 12 Visit" },
+        { "line_index": 6, "item_code": "VISIT-WK16", "confidence": 0.95, "reason": "Week 16 Visit" },
+        { "line_index": 7, "item_code": "VISIT-WK24", "confidence": 0.9, "reason": "Wk 24 Visit" },
+        { "line_index": 8, "item_code": "VISIT-EOS", "confidence": 0.95, "reason": "End of Study Visit" },
+        { "line_index": 9, "item_code": "PROC-ECG", "confidence": 0.95, "reason": "ECG" },
+        { "line_index": 10, "item_code": "PROC-VITAL", "confidence": 0.9, "reason": "Vitals ≈ Vital Signs Assessment" },
+        { "line_index": 11, "item_code": "PROC-PHYS", "confidence": 0.92, "reason": "Physical Exam" },
+        { "line_index": 12, "item_code": "PROC-INFUS", "confidence": 0.88, "reason": "IV Drug Administration ≈ Study Drug Infusion" },
+        { "line_index": 13, "item_code": "PROC-PK", "confidence": 0.9, "reason": "Pharmacokinetic Sampling ≈ PK Sample Collection" },
+        { "line_index": 14, "item_code": "LAB-CBC", "confidence": 0.9, "reason": "CBC w/ Differential ≈ CBC" },
+        { "line_index": 15, "item_code": "LAB-CMP", "confidence": 0.95, "reason": "Comprehensive Metabolic Panel" },
+        { "line_index": 16, "item_code": "LAB-URINAL", "confidence": 0.85, "reason": "UA ≈ Urinalysis" },
+        { "line_index": 17, "item_code": "LAB-LFT", "confidence": 0.85, "reason": "Hepatic Function Panel ≈ Liver Function Tests" },
+        { "line_index": 18, "item_code": "LAB-LIPID", "confidence": 0.92, "reason": "Lipid Panel" },
+        { "line_index": 19, "item_code": "IMG-CT", "confidence": 0.9, "reason": "CT Scan ≈ CT Scan (price differs)" },
+        { "line_index": 20, "item_code": "ADMIN-IRB", "confidence": 0.85, "reason": "IRB Annual Maintenance ≈ IRB Submission and Maintenance" },
+        { "line_index": 21, "item_code": "PASS-SHIP", "confidence": 0.8, "reason": "Drug Shipping (cold chain) ≈ Study Drug Shipping (price differs)" },
+        { "line_index": 22, "item_code": "PASS-KIT", "confidence": 0.8, "reason": "Lab Supplies ≈ Lab Kit - Standard" },
+        { "line_index": 23, "item_code": "PASS-SPEC", "confidence": 0.82, "reason": "Sample Transport ≈ Specimen Shipping" },
+        { "line_index": 24, "item_code": null, "confidence": 0.15, "reason": "Parking Reimbursement — not in catalog" },
+        { "line_index": 25, "item_code": null, "confidence": 0.15, "reason": "Patient Stipend — not in catalog" },
+        { "line_index": 26, "item_code": null, "confidence": 0.15, "reason": "Translator Services — not in catalog" }
+      ]
+    }
+  },
+  "mismatched-metadata-invoice": {
+    "extracted": {
+      "metadata": { "invoice_number": "INV-2024-077", "invoice_date": "2024-07-30", "sponsor_name": "Northwind Pharmaceuticals Inc.", "study_name": "VERITAS Phase 2 Study", "protocol_number": "NWD-VER-2024-002", "site_name": "Prairie Clinical Research", "pi_name": "Dr. Riley H. Foster", "total_amount": 3220 },
+      "line_items": [
+        { "description": "Site Admin Fee", "quantity": 1, "unit_price": 325, "amount": 325 },
+        { "description": "Screening", "quantity": 2, "unit_price": 425, "amount": 850 },
+        { "description": "Baseline", "quantity": 2, "unit_price": 500, "amount": 1000 },
+        { "description": "Month 3 Follow-up", "quantity": 1, "unit_price": 475, "amount": 475 },
+        { "description": "ECG", "quantity": 3, "unit_price": 80, "amount": 240 },
+        { "description": "CBC", "quantity": 2, "unit_price": 90, "amount": 180 },
+        { "description": "Lipid Profile", "quantity": 2, "unit_price": 75, "amount": 150 }
+      ]
+    },
+    "entityResolutionProposal": {
+      "sponsor": { "id": 1, "confidence": 0.45, "reason": "Northwind Pharmaceuticals Inc. resembles Northwind Pharma but is not confident enough to auto-resolve." },
+      "study": { "id": 2, "confidence": 0.91, "reason": "VERITAS Phase 2 Study matches the study name, while protocol validation is handled separately." },
+      "site": { "id": 6, "confidence": 0.45, "reason": "Prairie Clinical Research resembles Prairie Field Research Group but is not confident enough to auto-resolve." }
+    },
+    "matchProposal": { "matches": [] }
+  }
+}
