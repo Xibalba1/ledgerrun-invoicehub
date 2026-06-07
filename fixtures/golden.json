@@ -1,0 +1,35 @@
+{
+  "_comment": "Expected pipeline outcomes per sample invoice, derived from the takehome generator + seeded catalogs. The oracle for both the offline eval-smoke (recorded LLM outputs) and the on-demand live eval (real LLM).",
+  "simple-invoice": {
+    "sponsor_id": 2,
+    "study_id": 3,
+    "site_id": 1,
+    "protocol_match": true,
+    "decision": "submit",
+    "exceptions": []
+  },
+  "medium-invoice": {
+    "sponsor_id": 1,
+    "study_id": 1,
+    "site_id": 2,
+    "protocol_match": true,
+    "decision": "hold",
+    "exceptions": ["price_mismatch"]
+  },
+  "large-invoice": {
+    "sponsor_id": 1,
+    "study_id": 1,
+    "site_id": 3,
+    "protocol_match": true,
+    "decision": "hold",
+    "exceptions": ["unmatched_line_items", "price_mismatch"]
+  },
+  "mismatched-metadata-invoice": {
+    "sponsor_id": null,
+    "study_id": 2,
+    "site_id": null,
+    "protocol_match": false,
+    "decision": "hold",
+    "exceptions": ["metadata_unresolved", "protocol_mismatch"]
+  }
+}
