@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.local
+.env
+.DS_Store
+data/*.db
+data/*.db-*
+fixtures/emls/*.eml
+fixtures/adhoc/
+web/dist/
+.vite/
