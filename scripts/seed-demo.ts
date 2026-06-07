@@ -8,6 +8,7 @@ import {
   MatchProposal,
   ReferenceSnapshot,
   CatalogItem,
+  DecisionProposal,
   type InvoiceRecord,
 } from "@ledgerrun/contract";
 import { resolveContextFromProposal } from "../server/src/resolve.js";
@@ -17,8 +18,9 @@ import { saveInvoice } from "../server/src/db.js";
 import { savePdf } from "../server/src/storage.js";
 
 // Populate the hub WITHOUT an API key, using the recorded LLM outputs run through
-// the real resolve→match→decide chain. Lets you (and the preview) see submitted /
-// held / unresolved invoices end-to-end before wiring a live ANTHROPIC_API_KEY.
+// the real resolve→match→decision-reconciliation chain. Lets you (and the
+// preview) see submitted / held / unresolved invoices end-to-end before wiring a
+// live ANTHROPIC_API_KEY.
 // Run: npm run seed:demo
 const root = fileURLToPath(new URL("..", import.meta.url));
 const dataDir = join(root, "reference-api/api/seed/data");
@@ -40,12 +42,13 @@ for (const [i, name] of samples.entries()) {
   const extracted = ExtractedInvoice.parse(recorded[name].extracted);
   const entityProposal = EntityResolutionProposal.parse(recorded[name].entityResolutionProposal);
   const proposal = MatchProposal.parse(recorded[name].matchProposal);
+  const decisionProposal = DecisionProposal.parse(recorded[name].decisionProposal);
   const resolved = resolveContextFromProposal(extracted, snapshot, entityProposal);
   const matches =
     resolved.sponsor.match && resolved.study.match
       ? buildMatches(extracted.line_items, proposal, catalogFor(resolved.sponsor.match.id, resolved.study.match.id))
       : [];
-  const decision = decide(extracted, resolved, matches);
+  const decision = decide(extracted, resolved, matches, decisionProposal);
 
   const id = randomUUID();
   const rec: InvoiceRecord = {

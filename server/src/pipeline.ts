@@ -1,10 +1,18 @@
 import { randomUUID } from "node:crypto";
-import type { InvoiceRecord, LineItemMatch, ResolvedContext, ActionRequest, ExtractedLineItem } from "@ledgerrun/contract";
+import type {
+  InvoiceRecord,
+  DecisionResult,
+  LineItemMatch,
+  ResolvedContext,
+  ActionRequest,
+  ExtractedInvoice,
+  ExtractedLineItem,
+} from "@ledgerrun/contract";
 import { fetchReferenceSnapshot, fetchCatalog } from "./mcp/client.js";
 import { resolveContextDeterministic, resolveContextFromProposal } from "./resolve.js";
 import { buildMatches, classifyMatch } from "./match.js";
-import { decide } from "./decide.js";
-import { extractInvoice, proposeMatches, resolveEntities } from "./llm.js";
+import { buildDecisionDraft, reconcileDecision } from "./decide.js";
+import { extractInvoice, llmConfigured, proposeDecision, proposeMatches, resolveEntities } from "./llm.js";
 import { getInvoice, saveInvoice } from "./db.js";
 import { loadPdf } from "./storage.js";
 import { log, timed } from "./logger.js";
@@ -33,10 +41,10 @@ export function newInvoice(source: InvoiceRecord["source"]): InvoiceRecord {
 
 /**
  * The AI-first pipeline: extract → resolve (LLM over MCP candidates) → match →
- * decide, fully automated. State is persisted after every stage so the hub can
- * watch it progress; the human only enters afterward, via QC actions. Line-item
- * matching is skipped when sponsor+study didn't resolve (no catalog scope) —
- * the decision then holds on `metadata_unresolved`, the QC-required case.
+ * LLM-assisted decision, fully automated. State is persisted after every stage
+ * so the hub can watch it progress; the human only enters afterward, via QC
+ * actions. Line-item matching is skipped when sponsor+study didn't resolve (no
+ * catalog scope) — the decision then holds on `metadata_unresolved`.
  */
 export async function runPipeline(id: string, pdf: Buffer): Promise<void> {
   const at = (fields: Partial<InvoiceRecord>) => persist({ ...getInvoice(id)!, ...fields });
@@ -63,7 +71,7 @@ export async function runPipeline(id: string, pdf: Buffer): Promise<void> {
     at({ matches });
 
     at({ stage: "deciding" });
-    const decision = decide(extracted, resolved, matches);
+    const decision = await decideInvoice(extracted, resolved, matches, id);
     at({
       stage: "done",
       status: decision.decision === "submit" ? "submitted" : "held",
@@ -74,6 +82,25 @@ export async function runPipeline(id: string, pdf: Buffer): Promise<void> {
   } catch (err) {
     persist({ ...getInvoice(id)!, stage: "failed", status: "failed", error: String(err) });
     log.error("pipeline.failed", { id, err: String(err) });
+  }
+}
+
+async function decideInvoice(
+  extracted: ExtractedInvoice,
+  resolved: ResolvedContext,
+  matches: LineItemMatch[],
+  id: string,
+): Promise<DecisionResult> {
+  const draft = buildDecisionDraft(extracted, resolved, matches);
+  if (!llmConfigured()) return draft;
+
+  try {
+    const [proposal, tDecision] = await timed("decision", { id }, () => proposeDecision(extracted, resolved, matches, draft));
+    persist({ ...getInvoice(id)!, timings: { ...getInvoice(id)!.timings, decision: tDecision } });
+    return reconcileDecision(draft, proposal);
+  } catch (err) {
+    log.warn("pipeline.decision_fallback", { id, err: String(err) });
+    return reconcileDecision(draft);
   }
 }
 
@@ -153,7 +180,7 @@ async function correctMetadata(
 
   // Re-match against the (possibly new) catalog scope, then re-decide.
   const matches = await matchAgainstCatalog(corrected.extracted!.line_items, resolved, corrected.id);
-  const decision = decide(corrected.extracted!, resolved, matches);
+  const decision = await decideInvoice(corrected.extracted!, resolved, matches, corrected.id);
   return {
     ...corrected,
     matches,
@@ -176,7 +203,7 @@ async function correctMatch(
   const matches = rec.matches.map((m, i) =>
     i === a.line_index ? classifyMatch(m.line, chosen, 1, "Confirmed by reviewer.") : m,
   );
-  const decision = decide(rec.extracted, rec.resolved, matches);
+  const decision = await decideInvoice(rec.extracted, rec.resolved, matches, rec.id);
   return qc(
     {
       ...rec,

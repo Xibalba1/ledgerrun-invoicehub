@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest";
-import type { LineItemMatch, ResolvedContext, ExtractedInvoice, Sponsor, Study, Site } from "@ledgerrun/contract";
-import { decide } from "../src/decide.js";
+import {
+  DecisionProposal,
+  type LineItemMatch,
+  type ResolvedContext,
+  type ExtractedInvoice,
+  type Sponsor,
+  type Study,
+  type Site,
+} from "@ledgerrun/contract";
+import { decide, buildDecisionDraft, reconcileDecision } from "../src/decide.js";
 
 const sponsor: Sponsor = { id: 1, name: "Northwind Pharma", code: "NWD" };
 const study: Study = { id: 1, sponsor_id: 1, name: "LUMIN-2024", protocol_number: "NWD-LUM-2024-001" };
@@ -28,6 +36,27 @@ const extracted: ExtractedInvoice = {
 };
 
 describe("decide", () => {
+  it("validates typed LLM decision proposals", () => {
+    expect(
+      DecisionProposal.parse({
+        decision: "hold",
+        rationale: "AI recommends QC before submission.",
+        confidence: 0.82,
+        exception_codes: ["ai_review_recommended"],
+        warnings: ["Check visit wording."],
+      }),
+    ).toMatchObject({ decision: "hold", confidence: 0.82 });
+
+    expect(() =>
+      DecisionProposal.parse({
+        decision: "approve",
+        rationale: "not a valid decision",
+        confidence: 2,
+        exception_codes: ["nope"],
+      }),
+    ).toThrow();
+  });
+
   it("submits when metadata resolves and every line matches within tolerance (simple)", () => {
     const d = decide(extracted, resolved(), [matched("a"), matched("b")]);
     expect(d.decision).toBe("submit");
@@ -85,5 +114,69 @@ describe("decide", () => {
     expect(d.decision).toBe("submit");
     expect(d.exceptions.map((e) => e.code)).toContain("total_mismatch");
     expect(d.exceptions.find((e) => e.code === "total_mismatch")?.severity).toBe("warn");
+  });
+
+  it("uses an LLM submit proposal when no deterministic blockers exist", () => {
+    const d = decide(extracted, resolved(), [matched("a")], {
+      decision: "submit",
+      rationale: "AI reviewed the resolved context and matched catalog item; submit.",
+      confidence: 0.94,
+      exception_codes: [],
+      warnings: [],
+    });
+    expect(d.decision).toBe("submit");
+    expect(d.rationale).toContain("AI reviewed");
+    expect(d.exceptions).toHaveLength(0);
+  });
+
+  it("keeps deterministic blockers authoritative when the LLM proposes submit", () => {
+    const m = matched("IRB/Ethics Fees");
+    m.status = "price_mismatch";
+    m.price_delta = 50;
+    const d = decide(extracted, resolved(), [m], {
+      decision: "submit",
+      rationale: "The invoice appears payable.",
+      confidence: 0.75,
+      exception_codes: [],
+      warnings: [],
+    });
+    expect(d.decision).toBe("hold");
+    expect(d.exceptions.map((e) => e.code)).toContain("price_mismatch");
+    expect(d.rationale).toContain("despite the AI submit recommendation");
+  });
+
+  it("lets the LLM hold when deterministic policy has no blockers", () => {
+    const d = decide(extracted, resolved(), [matched("ambiguous admin fee")], {
+      decision: "hold",
+      rationale: "AI recommends review because the service period is unclear.",
+      confidence: 0.7,
+      exception_codes: ["ai_review_recommended"],
+      warnings: [],
+    });
+    expect(d.decision).toBe("hold");
+    expect(d.exceptions.map((e) => e.code)).toContain("ai_review_recommended");
+    expect(d.exceptions.find((e) => e.code === "ai_review_recommended")?.severity).toBe("block");
+  });
+
+  it("retains deterministic warnings when the LLM submits", () => {
+    const ex: ExtractedInvoice = {
+      metadata: { protocol_number: "NWD-LUM-2024-001", total_amount: 999 } as ExtractedInvoice["metadata"],
+      line_items: [],
+    };
+    const d = decide(ex, resolved(), [matched("a")], {
+      decision: "submit",
+      rationale: "AI considers the warning non-blocking and recommends submit.",
+      confidence: 0.9,
+      exception_codes: ["total_mismatch"],
+      warnings: ["Total mismatch is non-blocking."],
+    });
+    expect(d.decision).toBe("submit");
+    expect(d.exceptions.map((e) => e.code)).toContain("total_mismatch");
+    expect(d.exceptions.find((e) => e.code === "total_mismatch")?.severity).toBe("warn");
+  });
+
+  it("falls back to the deterministic draft without a proposal", () => {
+    const draft = buildDecisionDraft(extracted, resolved(), [matched("a")]);
+    expect(reconcileDecision(draft, null)).toEqual(draft);
   });
 });

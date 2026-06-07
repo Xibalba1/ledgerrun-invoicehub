@@ -1,11 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk";
 import {
+  DecisionProposal,
+  type DecisionResult,
   EntityResolutionProposal,
   ExtractedInvoice,
   MatchProposal,
   type CatalogItem,
   type ExtractedLineItem,
+  type LineItemMatch,
   type ReferenceSnapshot,
+  type ResolvedContext,
 } from "@ledgerrun/contract";
 import { config } from "./config.js";
 import { log } from "./logger.js";
@@ -81,6 +85,12 @@ const ENTITY_SYSTEM =
   "You resolve extracted clinical-trial invoice metadata to reference entities. " +
   "Choose ONLY IDs present in the supplied candidate lists. Use null when no candidate is plausible. " +
   "Use sponsor, study name, protocol number, site name, and PI hints together. Return ONLY JSON, no prose.";
+
+const DECISION_SYSTEM =
+  "You make submit-versus-hold decisions for clinical-trial site invoices after extraction, reference resolution, and catalog matching. " +
+  "Use the supplied validated signals and deterministic exception candidates. " +
+  "Recommend submit only when the context and line-item evidence support automated submission. " +
+  "Recommend hold when reviewer QC is prudent. Return ONLY JSON, no prose.";
 
 function guardText(message: Anthropic.Message): string {
   if (message.stop_reason === "refusal") throw new Error("LLM refused the request");
@@ -197,6 +207,77 @@ export async function proposeMatches(items: ExtractedLineItem[], catalog: Catalo
     ],
   });
   return MatchProposal.parse(parseJson(guardText(message)));
+}
+
+export function decisionPromptPayload(
+  extracted: ExtractedInvoice,
+  resolved: ResolvedContext,
+  matches: LineItemMatch[],
+  draft: DecisionResult,
+) {
+  return {
+    extracted_metadata: extracted.metadata,
+    resolved_context: {
+      sponsor: {
+        id: resolved.sponsor.match?.id ?? null,
+        name: resolved.sponsor.match?.name ?? null,
+        confidence: resolved.sponsor.confidence,
+      },
+      study: {
+        id: resolved.study.match?.id ?? null,
+        name: resolved.study.match?.name ?? null,
+        protocol_number: resolved.study.match?.protocol_number ?? null,
+        confidence: resolved.study.confidence,
+        protocol_match: resolved.study.protocol_match,
+      },
+      site: {
+        id: resolved.site.match?.id ?? null,
+        name: resolved.site.match?.name ?? null,
+        confidence: resolved.site.confidence,
+      },
+    },
+    matches: matches.map((m, line_index) => ({
+      line_index,
+      description: m.line.description,
+      quantity: m.line.quantity,
+      unit_price: m.line.unit_price ?? null,
+      amount: m.line.amount ?? null,
+      catalog_item_code: m.catalog_item?.item_code ?? null,
+      catalog_description: m.catalog_item?.description ?? null,
+      catalog_unit_price: m.catalog_item?.unit_price ?? null,
+      confidence: m.confidence,
+      status: m.status,
+      price_delta: m.price_delta,
+      match_reason: m.reason,
+    })),
+    deterministic_policy: draft,
+  };
+}
+
+export async function proposeDecision(
+  extracted: ExtractedInvoice,
+  resolved: ResolvedContext,
+  matches: LineItemMatch[],
+  draft: DecisionResult,
+): Promise<DecisionProposal> {
+  const message = await createMessage({
+    model: config.model,
+    max_tokens: 4000,
+    thinking: { type: "disabled" },
+    system: DECISION_SYSTEM,
+    messages: [
+      {
+        role: "user",
+        content:
+          `Validated decision inputs:\n${JSON.stringify(decisionPromptPayload(extracted, resolved, matches, draft), null, 2)}\n\n` +
+          `Return ONLY this shape:\n` +
+          `{"decision":"submit"|"hold","rationale":string,"confidence":number,` +
+          `"exception_codes":["metadata_unresolved"|"protocol_mismatch"|"unmatched_line_items"|"price_mismatch"|` +
+          `"low_confidence_match"|"total_mismatch"|"ai_review_recommended"],"warnings":[string]}`,
+      },
+    ],
+  });
+  return DecisionProposal.parse(parseJson(guardText(message)));
 }
 
 export const llmConfigured = () => config.anthropicKey.length > 0;

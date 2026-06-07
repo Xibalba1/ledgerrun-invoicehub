@@ -61,6 +61,7 @@ export const EXCEPTION_SHORT: Record<ExceptionCode, string> = {
   price_mismatch: "price",
   low_confidence_match: "low confidence",
   total_mismatch: "total",
+  ai_review_recommended: "AI review",
 };
 
 export const EXCEPTION_TITLE: Record<ExceptionCode, string> = {
@@ -70,6 +71,7 @@ export const EXCEPTION_TITLE: Record<ExceptionCode, string> = {
   price_mismatch: "Price mismatch",
   low_confidence_match: "Low-confidence match",
   total_mismatch: "Total mismatch",
+  ai_review_recommended: "AI review recommended",
 };
 
 /** The blockers a human must clear before a held invoice can submit. */

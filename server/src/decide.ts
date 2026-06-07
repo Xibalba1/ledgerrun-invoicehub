@@ -1,16 +1,30 @@
-import type { DecisionResult, Exception, LineItemMatch, ResolvedContext, ExtractedInvoice } from "@ledgerrun/contract";
+import type {
+  DecisionProposal,
+  DecisionResult,
+  Exception,
+  LineItemMatch,
+  ResolvedContext,
+  ExtractedInvoice,
+} from "@ledgerrun/contract";
 
 // Stated-total vs summed-line-amounts tolerance (a soft, warn-only check).
 const TOTAL_TOLERANCE = 0.5;
 
-/**
- * The decision policy: a transparent, deterministic rule over the AI-derived
- * signals (resolution confidence, per-line match status, protocol check). The
- * model does perception (extract + match); this does policy. Any `block`
- * exception holds the invoice; otherwise it submits. The exceptions list IS the
- * explanation shown in the hub — "why it was held" is never a black box.
- */
 export function decide(
+  extracted: ExtractedInvoice,
+  resolved: ResolvedContext,
+  matches: LineItemMatch[],
+  proposal: DecisionProposal | null = null,
+): DecisionResult {
+  return reconcileDecision(buildDecisionDraft(extracted, resolved, matches), proposal);
+}
+
+/**
+ * Deterministic policy over validated AI-derived signals. This builds the
+ * canonical exception list; reconciliation may let the model explain or hold,
+ * but never submit through a deterministic blocker.
+ */
+export function buildDecisionDraft(
   extracted: ExtractedInvoice,
   resolved: ResolvedContext,
   matches: LineItemMatch[],
@@ -86,6 +100,43 @@ export function decide(
       : `Held for QC: ${blocking.map((e) => e.code).join(", ")}.`;
 
   return { decision, rationale, exceptions };
+}
+
+export function reconcileDecision(draft: DecisionResult, proposal: DecisionProposal | null = null): DecisionResult {
+  if (!proposal) return draft;
+
+  const blocking = draft.exceptions.filter((e) => e.severity === "block");
+  if (blocking.length) {
+    return {
+      decision: "hold",
+      rationale:
+        proposal.decision === "hold"
+          ? proposal.rationale
+          : `Held for QC despite the AI submit recommendation: ${blocking.map((e) => e.code).join(", ")}.`,
+      exceptions: draft.exceptions,
+    };
+  }
+
+  if (proposal.decision === "hold") {
+    return {
+      decision: "hold",
+      rationale: proposal.rationale,
+      exceptions: [
+        ...draft.exceptions,
+        {
+          code: "ai_review_recommended",
+          severity: "block",
+          message: proposal.rationale,
+        },
+      ],
+    };
+  }
+
+  return {
+    decision: "submit",
+    rationale: proposal.rationale,
+    exceptions: draft.exceptions,
+  };
 }
 
 const fmt = (n: number | null | undefined) =>
