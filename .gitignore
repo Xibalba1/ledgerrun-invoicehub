@@ -5,6 +5,7 @@ dist/
 .DS_Store
 data/*.db
 data/*.db-*
+data/uploads/
 fixtures/emls/*.eml
 fixtures/adhoc/
 web/dist/
