@@ -1,0 +1,31 @@
+{
+  "name": "ledgerrun",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,magenta \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "PORT=8791 tsx watch server/src/index.ts",
+    "dev:web": "npm -w web run dev",
+    "mcp": "tsx server/src/mcp/server.ts",
+    "make:emls": "tsx scripts/make-emls.ts",
+    "make:invoice": "tsx scripts/make-invoice.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "eval": "tsx eval/run.ts",
+    "build:web": "npm -w web run build",
+    "typecheck": "tsc -p shared/tsconfig.json --noEmit && tsc -p server/tsconfig.json --noEmit && tsc -p web/tsconfig.json --noEmit",
+    "test": "vitest run",
+    "verify": "tsx verify.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "pdf-lib": "^1.17.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
