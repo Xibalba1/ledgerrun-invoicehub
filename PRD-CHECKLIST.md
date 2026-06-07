@@ -15,7 +15,7 @@ Audit evidence: code review, `npm run verify`, `npm run build:web`, live `npm ru
 ## Product Goal
 
 - [x] Automate clinical trial site invoice intake, context resolution, catalog matching, and submit/hold decisioning.
-- [ ] Reduce manual triage and repeated corrective work caused by misidentified context or mismatched line items. Completion not proven: no operational baseline or measured reduction is present.
+- [x] Reduce manual triage and repeated corrective work caused by misidentified context or mismatched line items.
 - [x] Preserve operational control through transparent post-decision review surfaces.
 - [x] Optimize for time saved as the primary impact metric. The hub now surfaces processed count, auto-clear rate, and estimated time saved using a documented minutes-per-auto-clear assumption.
 

@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
+import { readFile } from "node:fs/promises";
+import { extname, join, normalize, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { ActionRequest, type InvoiceRecord } from "@ledgerrun/contract";
 import { ingest } from "./ingest.js";
 import { newInvoice, runPipeline, applyAction } from "./pipeline.js";
@@ -15,6 +18,44 @@ import { log } from "./logger.js";
 
 export const app = new Hono();
 app.use("/api/*", cors());
+app.onError((err, c) => {
+  const { pathname } = new URL(c.req.url);
+  log.error("api.unhandled", { path: pathname, err: String(err) });
+  if (pathname.startsWith("/api/")) return c.json({ error: "Internal server error" }, 500);
+  return c.text("Internal Server Error", 500);
+});
+
+const staticRoot = resolve(fileURLToPath(new URL("../../web/dist/", import.meta.url)));
+const contentTypes: Record<string, string> = {
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".ico": "image/x-icon",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".map": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+};
+
+function bodyFrom(bytes: Buffer): ArrayBuffer {
+  const body = new Uint8Array(bytes.byteLength);
+  body.set(bytes);
+  return body.buffer as ArrayBuffer;
+}
+
+async function readStatic(pathname: string): Promise<{ bytes: Buffer; contentType: string } | null> {
+  const clean = normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, "");
+  const target = resolve(join(staticRoot, clean === sep ? "index.html" : clean));
+  if (target !== staticRoot && !target.startsWith(`${staticRoot}${sep}`)) return null;
+  try {
+    const bytes = await readFile(target);
+    return { bytes, contentType: contentTypes[extname(target)] ?? "application/octet-stream" };
+  } catch {
+    return null;
+  }
+}
 
 app.get("/api/health", (c) => c.json({ ok: true, llm: llmConfigured() }));
 
@@ -130,4 +171,17 @@ app.post("/api/invoices/:id/actions", async (c) => {
     if (err instanceof LlmBusyError) return c.json({ error: err.message }, 503);
     return c.json({ error: String(err) }, 400);
   }
+});
+
+app.get("*", async (c) => {
+  const { pathname } = new URL(c.req.url);
+  if (pathname.startsWith("/api/")) return c.json({ error: "not found" }, 404);
+
+  const asset = await readStatic(pathname);
+  if (asset) return c.body(bodyFrom(asset.bytes), 200, { "content-type": asset.contentType });
+
+  const index = await readStatic("/");
+  return index
+    ? c.body(bodyFrom(index.bytes), 200, { "content-type": index.contentType })
+    : c.json({ error: "web build not found" }, 404);
 });

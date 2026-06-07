@@ -1,0 +1,208 @@
+[
+  {
+    "name": "lumin clean multi-line submit",
+    "metadata": {"invoice_number": "DG-001", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 1580},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [
+      {"description": "Patient Visit - Screening", "unit_price": 450, "amount": 450, "item_code": "VISIT-SCR", "confidence": 0.98},
+      {"description": "Patient Visit - Baseline", "unit_price": 525, "amount": 525, "item_code": "VISIT-BL", "confidence": 0.98},
+      {"description": "ECG - 12 Lead", "quantity": 2, "unit_price": 85, "amount": 170, "item_code": "PROC-ECG", "confidence": 0.93},
+      {"description": "Site Administration Fee", "unit_price": 350, "amount": 350, "item_code": "ADMIN-SITE", "confidence": 0.95},
+      {"description": "Study Drug Shipping", "unit_price": 75, "amount": 75, "item_code": "PASS-SHIP", "confidence": 0.9}
+    ],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "catalyst clean submit",
+    "metadata": {"invoice_number": "DG-002", "sponsor_name": "Contoso Therapeutics", "study_name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "site_name": "Willow Creek Clinical Research Center", "total_amount": 975},
+    "entity": {"sponsor_id": 2, "study_id": 3, "site_id": 1},
+    "lines": [
+      {"description": "Screening", "unit_price": 480, "amount": 480, "item_code": "VISIT-SCR", "confidence": 0.96},
+      {"description": "CBC", "unit_price": 95, "amount": 95, "item_code": "LAB-CBC", "confidence": 0.94},
+      {"description": "Site Fee", "unit_price": 400, "amount": 400, "item_code": "ADMIN-SITE", "confidence": 0.92}
+    ],
+    "expected": {"sponsor_id": 2, "study_id": 3, "site_id": 1, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "veritas clean submit",
+    "metadata": {"invoice_number": "DG-003", "sponsor_name": "Northwind Pharma", "study_name": "VERITAS", "protocol_number": "NWD-VER-2023-002", "site_name": "Eastbridge Clinical Trials Site", "total_amount": 1055},
+    "entity": {"sponsor_id": 1, "study_id": 2, "site_id": 4},
+    "lines": [
+      {"description": "Screening Visit", "unit_price": 425, "amount": 425, "item_code": "VISIT-SCR", "confidence": 0.95},
+      {"description": "Month 3 Visit", "unit_price": 475, "amount": 475, "item_code": "VISIT-MONTH3", "confidence": 0.96},
+      {"description": "12-Lead ECG", "unit_price": 80, "amount": 80, "item_code": "PROC-ECG", "confidence": 0.91},
+      {"description": "Lipid Panel", "unit_price": 75, "amount": 75, "item_code": "LAB-LIPID", "confidence": 0.91}
+    ],
+    "expected": {"sponsor_id": 1, "study_id": 2, "site_id": 4, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "aurora clean submit",
+    "metadata": {"invoice_number": "DG-004", "sponsor_name": "Contoso Therapeutics", "study_name": "AURORA Extension", "protocol_number": "CON-AUR-2023-052", "site_name": "Seaside Research Associates", "total_amount": 1303},
+    "entity": {"sponsor_id": 2, "study_id": 4, "site_id": 5},
+    "lines": [
+      {"description": "Baseline Visit", "unit_price": 520, "amount": 520, "item_code": "VISIT-BL", "confidence": 0.95},
+      {"description": "Metabolic Panel", "unit_price": 108, "amount": 108, "item_code": "LAB-CMP", "confidence": 0.91},
+      {"description": "MRI Brain", "unit_price": 675, "amount": 675, "item_code": "IMG-MRI", "confidence": 0.94}
+    ],
+    "expected": {"sponsor_id": 2, "study_id": 4, "site_id": 5, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "summit clean submit",
+    "metadata": {"invoice_number": "DG-005", "sponsor_name": "Fabrikam Biopharma", "study_name": "SUMMIT Study", "protocol_number": "FAB-SMT-2024-301", "site_name": "Central Clinical Trials Network", "total_amount": 625},
+    "entity": {"sponsor_id": 3, "study_id": 5, "site_id": 7},
+    "lines": [
+      {"description": "Baseline", "unit_price": 475, "amount": 475, "item_code": "VISIT-BL", "confidence": 0.97},
+      {"description": "CBC", "unit_price": 88, "amount": 88, "item_code": "LAB-CBC", "confidence": 0.9},
+      {"description": "HbA1c", "unit_price": 62, "amount": 62, "item_code": "LAB-HBA1C", "confidence": 0.9}
+    ],
+    "expected": {"sponsor_id": 3, "study_id": 5, "site_id": 7, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "foundation clean submit",
+    "metadata": {"invoice_number": "DG-006", "sponsor_name": "Woodgrove Life Sciences", "study_name": "FOUNDATION Registry", "protocol_number": "WDL-FDN-2024-401", "site_name": "Ridgeview Medical Center", "total_amount": 1000},
+    "entity": {"sponsor_id": 4, "study_id": 6, "site_id": 8},
+    "lines": [
+      {"description": "Enrollment Visit", "unit_price": 350, "amount": 350, "item_code": "VISIT-ENROLL", "confidence": 0.95},
+      {"description": "Annual Follow-up Visit", "quantity": 2, "unit_price": 325, "amount": 650, "item_code": "VISIT-ANNUAL", "confidence": 0.94}
+    ],
+    "expected": {"sponsor_id": 4, "study_id": 6, "site_id": 8, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "single price mismatch holds",
+    "metadata": {"invoice_number": "DG-007", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 550},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [{"description": "IRB Submission and Maintenance", "unit_price": 550, "amount": 550, "item_code": "ADMIN-IRB", "confidence": 0.97}],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "hold", "exceptions": ["price_mismatch"]}
+  },
+  {
+    "name": "multiple price mismatches hold",
+    "metadata": {"invoice_number": "DG-008", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Highland Ridge Hospital - Research Unit", "total_amount": 735},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 3},
+    "lines": [
+      {"description": "Patient Visit - Week 12", "unit_price": 525, "amount": 525, "item_code": "VISIT-WK12", "confidence": 0.96},
+      {"description": "Study Drug Infusion", "unit_price": 210, "amount": 210, "item_code": "PROC-INFUS", "confidence": 0.91}
+    ],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 3, "protocol_match": true, "decision": "hold", "exceptions": ["price_mismatch"]}
+  },
+  {
+    "name": "unknown item code is unmatched",
+    "metadata": {"invoice_number": "DG-009", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 450},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [{"description": "Patient Visit - Screening", "unit_price": 450, "amount": 450, "item_code": "NO-SUCH-CODE", "confidence": 0.99}],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "hold", "exceptions": ["unmatched_line_items"]}
+  },
+  {
+    "name": "null match proposal is unmatched",
+    "metadata": {"invoice_number": "DG-010", "sponsor_name": "Contoso Therapeutics", "study_name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "site_name": "Willow Creek Clinical Research Center", "total_amount": 125},
+    "entity": {"sponsor_id": 2, "study_id": 3, "site_id": 1},
+    "lines": [{"description": "Courier surcharge", "unit_price": 125, "amount": 125, "item_code": null, "confidence": 0.3}],
+    "expected": {"sponsor_id": 2, "study_id": 3, "site_id": 1, "protocol_match": true, "decision": "hold", "exceptions": ["unmatched_line_items"]}
+  },
+  {
+    "name": "missing proposal entry is unmatched",
+    "metadata": {"invoice_number": "DG-011", "sponsor_name": "Fabrikam Biopharma", "study_name": "SUMMIT Study", "protocol_number": "FAB-SMT-2024-301", "site_name": "Central Clinical Trials Network", "total_amount": 400},
+    "entity": {"sponsor_id": 3, "study_id": 5, "site_id": 7},
+    "lines": [{"description": "Screening", "unit_price": 400, "amount": 400, "omit_proposal": true}],
+    "expected": {"sponsor_id": 3, "study_id": 5, "site_id": 7, "protocol_match": true, "decision": "hold", "exceptions": ["unmatched_line_items"]}
+  },
+  {
+    "name": "low confidence match holds",
+    "metadata": {"invoice_number": "DG-012", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 450},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [{"description": "Screen visit assessment", "unit_price": 450, "amount": 450, "item_code": "VISIT-SCR", "confidence": 0.55}],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "hold", "exceptions": ["low_confidence_match"]}
+  },
+  {
+    "name": "sponsor unresolved holds",
+    "metadata": {"invoice_number": "DG-013", "sponsor_name": "Unknown Sponsor", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 0},
+    "entity": {"sponsor_id": null, "study_id": 1, "site_id": 2},
+    "lines": [],
+    "expected": {"sponsor_id": null, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "hold", "exceptions": ["metadata_unresolved"]}
+  },
+  {
+    "name": "study outside sponsor scope holds",
+    "metadata": {"invoice_number": "DG-014", "sponsor_name": "Northwind Pharma", "study_name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "site_name": "Harborview Medical Institute", "total_amount": 0},
+    "entity": {"sponsor_id": 1, "study_id": 3, "site_id": 2},
+    "lines": [],
+    "expected": {"sponsor_id": 1, "study_id": null, "site_id": 2, "protocol_match": null, "decision": "hold", "exceptions": ["metadata_unresolved"]}
+  },
+  {
+    "name": "protocol mismatch holds",
+    "metadata": {"invoice_number": "DG-015", "sponsor_name": "Northwind Pharma", "study_name": "VERITAS", "protocol_number": "NWD-VER-2024-999", "site_name": "Eastbridge Clinical Trials Site", "total_amount": 425},
+    "entity": {"sponsor_id": 1, "study_id": 2, "site_id": 4},
+    "lines": [{"description": "Screening Visit", "unit_price": 425, "amount": 425, "item_code": "VISIT-SCR", "confidence": 0.96}],
+    "expected": {"sponsor_id": 1, "study_id": 2, "site_id": 4, "protocol_match": false, "decision": "hold", "exceptions": ["protocol_mismatch"]}
+  },
+  {
+    "name": "site unresolved holds",
+    "metadata": {"invoice_number": "DG-016", "sponsor_name": "Contoso Therapeutics", "study_name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "site_name": "Moonbase Site", "total_amount": 480},
+    "entity": {"sponsor_id": 2, "study_id": 3, "site_id": null},
+    "lines": [{"description": "Screening", "unit_price": 480, "amount": 480, "item_code": "VISIT-SCR", "confidence": 0.96}],
+    "expected": {"sponsor_id": 2, "study_id": 3, "site_id": null, "protocol_match": true, "decision": "hold", "exceptions": ["metadata_unresolved"]}
+  },
+  {
+    "name": "total mismatch is warning only",
+    "metadata": {"invoice_number": "DG-017", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 999},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [{"description": "Patient Visit - Screening", "unit_price": 450, "amount": 450, "item_code": "VISIT-SCR", "confidence": 0.98}],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "submit", "exceptions": ["total_mismatch"]}
+  },
+  {
+    "name": "total warning plus price blocker holds",
+    "metadata": {"invoice_number": "DG-018", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 999},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [{"description": "IRB Submission and Maintenance", "unit_price": 550, "amount": 550, "item_code": "ADMIN-IRB", "confidence": 0.96}],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "hold", "exceptions": ["price_mismatch", "total_mismatch"]}
+  },
+  {
+    "name": "llm submit cannot override blockers",
+    "metadata": {"invoice_number": "DG-019", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 550},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [{"description": "IRB Submission and Maintenance", "unit_price": 550, "amount": 550, "item_code": "ADMIN-IRB", "confidence": 0.96}],
+    "decisionProposal": {"decision": "submit", "rationale": "AI believes the discrepancy is acceptable.", "confidence": 0.9, "exception_codes": [], "warnings": []},
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "hold", "exceptions": ["price_mismatch"]}
+  },
+  {
+    "name": "llm hold adds ai review blocker",
+    "metadata": {"invoice_number": "DG-020", "sponsor_name": "Contoso Therapeutics", "study_name": "CATALYST Trial", "protocol_number": "CON-CAT-2024-101", "site_name": "Willow Creek Clinical Research Center", "total_amount": 480},
+    "entity": {"sponsor_id": 2, "study_id": 3, "site_id": 1},
+    "lines": [{"description": "Screening", "unit_price": 480, "amount": 480, "item_code": "VISIT-SCR", "confidence": 0.96}],
+    "decisionProposal": {"decision": "hold", "rationale": "AI wants manual review because invoice memo mentions retroactive billing.", "confidence": 0.74, "exception_codes": ["ai_review_recommended"], "warnings": []},
+    "expected": {"sponsor_id": 2, "study_id": 3, "site_id": 1, "protocol_match": true, "decision": "hold", "exceptions": ["ai_review_recommended"]}
+  },
+  {
+    "name": "missing total still submits",
+    "metadata": {"invoice_number": "DG-021", "sponsor_name": "Contoso Therapeutics", "study_name": "AURORA Extension", "protocol_number": "CON-AUR-2023-052", "site_name": "Seaside Research Associates", "total_amount": null},
+    "entity": {"sponsor_id": 2, "study_id": 4, "site_id": 5},
+    "lines": [{"description": "Screening Visit", "unit_price": 450, "amount": 450, "item_code": "VISIT-SCR", "confidence": 0.94}],
+    "expected": {"sponsor_id": 2, "study_id": 4, "site_id": 5, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "zero price catalog item submits",
+    "metadata": {"invoice_number": "DG-022", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 0},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2},
+    "lines": [{"description": "Study Device", "unit_price": 0, "amount": 0, "item_code": "PASS-DEVICE", "confidence": 0.91}],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "item code from different study is unmatched",
+    "metadata": {"invoice_number": "DG-023", "sponsor_name": "Woodgrove Life Sciences", "study_name": "FOUNDATION Registry", "protocol_number": "WDL-FDN-2024-401", "site_name": "Ridgeview Medical Center", "total_amount": 350},
+    "entity": {"sponsor_id": 4, "study_id": 6, "site_id": 8},
+    "lines": [{"description": "Enrollment Visit", "unit_price": 350, "amount": 350, "item_code": "ADMIN-ENROLL", "confidence": 0.98}],
+    "expected": {"sponsor_id": 4, "study_id": 6, "site_id": 8, "protocol_match": true, "decision": "hold", "exceptions": ["unmatched_line_items"]}
+  },
+  {
+    "name": "confidence is clamped but valid match submits",
+    "metadata": {"invoice_number": "DG-024", "sponsor_name": "Northwind Pharma", "study_name": "LUMIN-2024", "protocol_number": "NWD-LUM-2024-001", "site_name": "Harborview Medical Institute", "total_amount": 450},
+    "entity": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "confidence": 1.3},
+    "lines": [{"description": "Patient Visit - Screening", "unit_price": 450, "amount": 450, "item_code": "VISIT-SCR", "confidence": 1.4}],
+    "expected": {"sponsor_id": 1, "study_id": 1, "site_id": 2, "protocol_match": true, "decision": "submit", "exceptions": []}
+  },
+  {
+    "name": "all metadata unresolved holds without catalog matching",
+    "metadata": {"invoice_number": "DG-025", "sponsor_name": null, "study_name": null, "protocol_number": null, "site_name": null, "total_amount": 450},
+    "entity": {"sponsor_id": null, "study_id": null, "site_id": null},
+    "lines": [{"description": "Patient Visit - Screening", "unit_price": 450, "amount": 450, "item_code": "VISIT-SCR", "confidence": 0.98}],
+    "expected": {"sponsor_id": null, "study_id": null, "site_id": null, "protocol_match": null, "decision": "hold", "exceptions": ["metadata_unresolved"], "matches": 0}
+  }
+]

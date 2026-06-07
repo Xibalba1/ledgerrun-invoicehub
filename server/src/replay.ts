@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import {
@@ -39,8 +39,8 @@ export async function seedDemo(): Promise<string[]> {
   const names = SAMPLES.filter((n) => recorded[n]);
   const ids: string[] = [];
   for (const [i, name] of names.entries()) {
-    const eml = readFileSync(join(root, "fixtures/emls", `${name}.eml`));
-    const { pdf, source } = await ingest(eml, `${name}.eml`);
+    const sample = loadSample(name);
+    const { pdf, source } = await ingest(sample.bytes, sample.filename);
     const rec = newInvoice(source);
     savePdf(rec.id, pdf);
     ids.push(rec.id);
@@ -49,6 +49,14 @@ export async function seedDemo(): Promise<string[]> {
   }
   log.info("demo.seeded", { count: ids.length });
   return ids;
+}
+
+function loadSample(name: string): { bytes: Buffer; filename: string } {
+  const emlPath = join(root, "fixtures/emls", `${name}.eml`);
+  if (existsSync(emlPath)) return { bytes: readFileSync(emlPath), filename: `${name}.eml` };
+
+  const pdfPath = join(root, "sample-invoices", `${name}.pdf`);
+  return { bytes: readFileSync(pdfPath), filename: `${name}.pdf` };
 }
 
 export async function runReplayPipeline(id: string, name: string): Promise<void> {
