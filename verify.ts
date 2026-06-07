@@ -1,12 +1,13 @@
 import { execSync } from "node:child_process";
 
 // The deterministic, offline gate bound to the project Stop hook. Only fast,
-// network-free checks live here — typecheck + unit/eval-smoke tests. The LIVE
+// network-free checks live here — typecheck, unit/eval-smoke tests, and web build. The LIVE
 // LLM eval (npm run eval) is on-demand: it's networked and costs tokens, so it
 // must never gate every Stop.
 const steps: [string, string][] = [
   ["typecheck", "npm run typecheck"],
   ["tests", "npm test"],
+  ["web build", "npm run build:web"],
 ];
 
 for (const [name, cmd] of steps) {
@@ -18,4 +19,4 @@ for (const [name, cmd] of steps) {
     process.exit(1);
   }
 }
-process.stdout.write("\n✓ verify passed (typecheck + tests)\n");
+process.stdout.write("\n✓ verify passed (typecheck + tests + web build)\n");

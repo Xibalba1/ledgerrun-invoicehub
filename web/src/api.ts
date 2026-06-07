@@ -5,8 +5,24 @@ import { z } from "zod";
 // it reaches the UI — the same parse-or-throw discipline the server applies inward.
 async function getJson<T>(url: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`${url} → ${res.status}`);
-  return schema.parse(await res.json());
+  const body = await readJson(res);
+  if (!res.ok) throw new Error(errorMessage(body, `${url} failed (${res.status})`));
+  return schema.parse(body);
+}
+
+async function readJson(res: Response): Promise<unknown> {
+  const text = await res.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    if (!res.ok) return { error: `${res.url || "request"} failed (${res.status})` };
+    throw new Error("Response was not valid JSON.");
+  }
+}
+
+function errorMessage(body: unknown, fallback: string): string {
+  return typeof body === "object" && body !== null && "error" in body && typeof body.error === "string" ? body.error : fallback;
 }
 
 export const api = {
@@ -16,14 +32,24 @@ export const api = {
   reference: () => getJson("/api/reference", ReferenceSnapshot),
   catalog: (sponsorId: number, studyId: number) =>
     getJson(`/api/catalog?sponsor_id=${sponsorId}&study_id=${studyId}`, CatalogItem.array()),
-  demoSeed: () => fetch("/api/demo/seed", { method: "POST" }).then((r) => r.json() as Promise<{ ids: string[] }>),
-  reset: () => fetch("/api/demo/reset", { method: "POST" }).then((r) => r.json() as Promise<{ ok: boolean }>),
+  async demoSeed(): Promise<{ ids: string[] }> {
+    const res = await fetch("/api/demo/seed", { method: "POST" });
+    const body = await readJson(res);
+    if (!res.ok) throw new Error(errorMessage(body, `demo seed failed (${res.status})`));
+    return z.object({ ids: z.string().array() }).parse(body);
+  },
+  async reset(): Promise<{ ok: boolean }> {
+    const res = await fetch("/api/demo/reset", { method: "POST" });
+    const body = await readJson(res);
+    if (!res.ok) throw new Error(errorMessage(body, `reset failed (${res.status})`));
+    return z.object({ ok: z.boolean() }).parse(body);
+  },
   async upload(file: File): Promise<InvoiceRecord> {
     const form = new FormData();
     form.append("file", file);
     const res = await fetch("/api/invoices", { method: "POST", body: form });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.error ?? `upload failed (${res.status})`);
+    const body = await readJson(res);
+    if (!res.ok) throw new Error(errorMessage(body, `upload failed (${res.status})`));
     return InvoiceRecord.parse(body);
   },
   async action(id: string, action: ActionRequest): Promise<InvoiceRecord> {
@@ -32,8 +58,8 @@ export const api = {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(action),
     });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.error ?? `action failed (${res.status})`);
+    const body = await readJson(res);
+    if (!res.ok) throw new Error(errorMessage(body, `action failed (${res.status})`));
     return InvoiceRecord.parse(body);
   },
 };
