@@ -9,6 +9,34 @@ superseded_by:
 
 LedgerRun is a local-first, AI-assisted invoice ingestion hub for clinical-trial finance operations. Its architecture is intentionally staged: untrusted documents and model output are converted into typed records, enriched with reference data, reconciled against deterministic safety checks, and then exposed to reviewers with enough evidence to correct or override the result. The core design principle is that AI performs the first pass end to end, while TypeScript validation and deterministic guardrails make the outcome auditable.
 
+## System Diagram
+
+```mermaid
+flowchart LR
+    reviewer[Reviewer] --> web[React Review Hub]
+    web --> api[Hono HTTP API]
+    api --> ingest[Ingestion and PDF Storage]
+    ingest --> pipeline[AI Pipeline]
+
+    pipeline --> llm[Anthropic LLM]
+    llm --> contract[Shared Zod Contract]
+    pipeline --> mcp[MCP Reference Wrapper]
+    mcp --> reference[Reference API]
+    reference --> postgres[(Postgres Reference Data)]
+
+    contract --> guardrails[Deterministic Guardrails]
+    mcp --> guardrails
+    pipeline --> guardrails
+    guardrails --> sqlite[(SQLite Invoice Records)]
+    sqlite --> api
+    api --> stream[SSE Stage Updates]
+    stream --> web
+
+    web --> qc[QC Actions]
+    qc --> api
+    qc --> pipeline
+```
+
 ## Components
 
 1. **Workspace packages (`shared`, `server`, `web`)**  
